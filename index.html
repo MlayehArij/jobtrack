@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JobTrack – Gestionnaire de candidatures</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<section id="auth" class="auth" hidden>
+  <form id="auth-form" class="glass auth-card">
+    <div class="logo">◆ JobTrack</div>
+    <h2 id="auth-title">Log in</h2>
+    <div><label for="email">Email</label><input type="email" id="email" required autocomplete="email"></div>
+    <div><label for="password">Password</label><input type="password" id="password" required minlength="6" autocomplete="current-password"></div>
+    <p id="auth-msg" class="auth-msg" role="alert"></p>
+    <button type="submit" id="auth-submit" class="btn">Log in</button>
+    <button type="button" id="auth-switch" class="link-btn">No account yet? Sign up</button>
+  </form>
+</section>
+
+<div class="app" id="app">
+  <aside class="sidebar">
+    <div class="logo">◆ JobTrack</div>
+    <nav>
+      <button class="nav-btn" data-view="dashboard">▦ <span>Dashboard</span></button>
+      <button class="nav-btn" data-view="applications">☰ <span>Applications</span></button>
+      <button class="nav-btn" data-view="kanban">▥ <span>Kanban</span></button>
+    </nav>
+    <div id="who" class="note"></div>
+    <button id="theme-toggle" class="nav-btn" aria-label="Changer de thème">☀️ <span>Theme</span></button>
+    <button id="logout-btn" class="nav-btn" hidden>⎋ <span>Logout</span></button>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div><h1 id="title">Dashboard</h1><p id="subtitle"></p></div>
+      <div class="controls">
+        <div id="filters" class="filters">
+          <input type="search" id="search" placeholder="🔎 Search company" aria-label="Search company">
+          <select id="filter" aria-label="Filter by status">
+            <option value="All">🔽 All statuses</option>
+            <option>Applied</option><option>Interview</option><option>Accepted</option><option>Rejected</option>
+          </select>
+        </div>
+        <button id="add-btn" class="btn">＋ Add application</button>
+      </div>
+    </header>
+
+    <section id="view-dashboard">
+      <div class="stats">
+        <div class="glass stat"><b id="stat-total">0</b><span>Applications</span></div>
+        <div class="glass stat"><b id="stat-interviews">0</b><span>Interviews</span></div>
+        <div class="glass stat"><b id="stat-offers">0</b><span>Offers</span></div>
+        <div class="glass stat"><b id="stat-rejected">0</b><span>Rejected</span></div>
+      </div>
+      <div class="grid2">
+        <div class="glass">
+          <h2>Status overview</h2>
+          <div class="chart-wrap">
+            <div id="donut" class="donut"><span id="donut-total">0</span></div>
+            <ul id="legend" class="legend"></ul>
+          </div>
+        </div>
+        <div class="glass">
+          <h2>Recent applications</h2>
+          <ul id="recent" class="recent"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-applications" hidden>
+      <div class="glass table-wrapper">
+        <table>
+          <thead>
+            <tr><th data-sort="company">Company</th><th data-sort="position">Position</th><th data-sort="date">Date</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody id="job-list"></tbody>
+        </table>
+        <p id="empty" class="empty" hidden>No application yet. Click “Add application”.</p>
+      </div>
+    </section>
+
+    <section id="view-kanban" hidden><div id="board" class="board"></div></section>
+  </main>
+</div>
+
+<dialog id="modal">
+  <h2 id="modal-title">➕ Add application</h2>
+  <form id="job-form" class="form">
+    <div><label for="company">🏢 Company</label><input id="company" required></div>
+    <div><label for="link">🔗 Company link</label><input type="url" id="link" placeholder="https://..."></div>
+    <div><label for="position">💼 Position</label><input id="position" required></div>
+    <div><label for="city">📍 City (optional)</label><input id="city" placeholder="Tunis, Sfax, remote..."></div>
+    <div><label for="date">📅 Application date</label><input type="date" id="date" required></div>
+    <div><label for="status">📌 Status</label>
+      <select id="status"><option>Applied</option><option>Interview</option><option>Accepted</option><option>Rejected</option></select>
+    </div>
+    <div class="wide"><label for="notes">📝 Notes (optional)</label><textarea id="notes" rows="2" placeholder="Recruiter name, interview questions..."></textarea></div>
+    <div class="form-actions">
+      <button type="button" id="cancel-edit" class="btn-ghost">Cancel</button>
+      <button type="submit" id="submit-btn" class="btn">Add application</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
