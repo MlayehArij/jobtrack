@@ -2,11 +2,12 @@
 const KEY = "jobtrack.apps", THEME_KEY = "jobtrack.theme", VIEW_KEY = "jobtrack.view";
 const STATUSES = ["Applied", "Interview", "Accepted", "Rejected"];
 const COLORS = { Applied: "#7da2ff", Interview: "#f5b942", Accepted: "#3ddc97", Rejected: "#ff7b8f" };
-const FIELDS = ["company", "link", "city", "position", "date", "status", "notes"];
+const FIELDS = ["company", "link", "city", "position", "date", "status", "notes", "offer_text"];
 const VIEWS = {
   dashboard: ["Dashboard", "Overview of your applications."],
   applications: ["Applications", "Click a column title to sort. ✏️ edits, 🗑️ deletes. Change a status with its dropdown."],
   kanban: ["Kanban", "Drag a card into another column to change its status."],
+  ai: ["AI Assistant", "Write emails and prepare for interviews for one of your applications."],
 };
 const $ = (id) => document.getElementById(id);
 // Petit outil pour créer un élément HTML (textContent = pas d'injection de code)
@@ -77,11 +78,12 @@ function render() {
   $("subtitle").textContent = VIEWS[view][1];
   document.querySelectorAll(".nav-btn[data-view]").forEach((b) => b.classList.toggle("active", b.dataset.view === view));
   Object.keys(VIEWS).forEach((v) => { $("view-" + v).hidden = v !== view; });
-  $("filters").hidden = view === "dashboard";
+  $("filters").hidden = view !== "applications" && view !== "kanban";
 
   if (view === "dashboard") renderDashboard();
   else if (view === "applications") renderTable(getList());
-  else renderBoard(getList());
+  else if (view === "kanban") renderBoard(getList());
+  else renderAi();
 }
 
 function getList() {
@@ -243,6 +245,99 @@ document.querySelectorAll("th[data-sort]").forEach((th) => {
   th.addEventListener("keydown", (e) => { if (e.key === "Enter") sortBy(); });
 });
 
+// ---------- Page "AI Assistant" (messages + préparation d'entretien) ----------
+// Le site n'a JAMAIS la clé de l'IA : il appelle la fonction cloud "ai-assistant" de Supabase.
+let aiApp = null;
+$("ai-about").value = localStorage.getItem("jobtrack.about") || "";
+$("ai-about").addEventListener("input", () => localStorage.setItem("jobtrack.about", $("ai-about").value));
+const aiStatus = (t, isError) => { $("ai-status").textContent = t; $("ai-status").classList.toggle("error", !!isError); };
+
+function aiClear() {
+  $("ai-msg-out").hidden = true;
+  $("ai-copy").hidden = true;
+  $("ai-questions").replaceChildren();
+  aiStatus("");
+}
+function aiSelect() {
+  aiApp = apps.find((x) => String(x.id) === $("ai-app").value) || null;
+  $("ai-offer-note").textContent = !aiApp ? "" : aiApp.offer_text
+    ? "✅ Job offer text found: the AI will use it."
+    : "💡 Tip: paste the job offer in this application (✏️ Edit) for better results.";
+}
+function renderAi() {
+  const sel = $("ai-app"), keep = sel.value;
+  sel.replaceChildren(...apps.map((a) => new Option(`${a.company} — ${a.position}`, a.id)));
+  if (apps.some((a) => String(a.id) === keep)) sel.value = keep;
+  $("ai-layout").hidden = apps.length === 0;
+  $("ai-empty").hidden = apps.length > 0;
+  aiSelect();
+}
+function aiTab(t) {
+  $("ai-tab-msg").classList.toggle("active", t === "msg");
+  $("ai-tab-int").classList.toggle("active", t === "int");
+  $("ai-pane-msg").hidden = t !== "msg";
+  $("ai-pane-int").hidden = t !== "int";
+}
+
+async function aiCall(payload) {
+  if (!sb) throw new Error("The AI needs an account: connect Supabase first (see SETUP_AI.md).");
+  if (!aiApp) throw new Error("Choose an application first.");
+  const { data: { session } } = await sb.auth.getSession();
+  const { data, error } = await sb.functions.invoke("ai-assistant", {
+    body: { company: aiApp.company, position: aiApp.position, city: aiApp.city, notes: aiApp.notes,
+            offer: aiApp.offer_text, about: $("ai-about").value, language: $("ai-lang").value, ...payload },
+    headers: { Authorization: `Bearer ${session.access_token}` },
+  });
+  if (error) {
+    let msg = error.message;
+    try { msg = (await error.context.json()).error || msg; } catch {}
+    throw new Error(msg);
+  }
+  return data;
+}
+async function aiRun(btn, fn) {
+  btn.disabled = true; // évite les doubles clics
+  aiStatus("Thinking...");
+  try { await fn(); aiStatus(""); } catch (e) { aiStatus(e.message, true); }
+  btn.disabled = false;
+}
+
+function buildQuestion(q) {
+  const li = el("li", "qcard");
+  li.append(el("strong", "", q.q), el("div", "note", `💡 ${q.tip}`));
+  const ta = el("textarea"), fb = el("div", "feedback");
+  const practice = el("button", "btn-ghost", "Practice"), send = el("button", "btn", "Get feedback");
+  ta.rows = 3; ta.placeholder = "Type your answer to practice...";
+  ta.hidden = send.hidden = fb.hidden = true;
+  practice.addEventListener("click", () => { ta.hidden = send.hidden = false; practice.hidden = true; ta.focus(); });
+  send.addEventListener("click", () => aiRun(send, async () => {
+    const { text } = await aiCall({ action: "feedback", question: q.q, answer: ta.value });
+    fb.textContent = text; fb.hidden = false;  // textContent : jamais de HTML venant de l'IA
+  }));
+  li.append(practice, ta, send, fb);
+  return li;
+}
+
+$("ai-app").addEventListener("change", () => { aiSelect(); aiClear(); });
+$("ai-tab-msg").addEventListener("click", () => aiTab("msg"));
+$("ai-tab-int").addEventListener("click", () => aiTab("int"));
+$("ai-gen-msg").addEventListener("click", (e) => aiRun(e.currentTarget, async () => {
+  const { text } = await aiCall({ action: "message", kind: $("ai-kind").value });
+  $("ai-msg-out").value = text;
+  $("ai-msg-out").hidden = false;
+  $("ai-copy").hidden = false;
+}));
+$("ai-gen-int").addEventListener("click", (e) => aiRun(e.currentTarget, async () => {
+  const { questions } = await aiCall({ action: "interview" });
+  if (!Array.isArray(questions)) throw new Error("Unexpected answer. Please try again.");
+  $("ai-questions").replaceChildren(...questions.map(buildQuestion));
+}));
+$("ai-copy").addEventListener("click", async () => {
+  await navigator.clipboard.writeText($("ai-msg-out").value);
+  $("ai-copy").textContent = "Copied ✓";
+  setTimeout(() => { $("ai-copy").textContent = "Copy"; }, 1500);
+});
+
 // ---------- Thème (sombre par défaut) ----------
 function setTheme(t) {
   document.documentElement.dataset.theme = t;
@@ -262,9 +357,13 @@ function authMsg(text, isError) {
 function setAuthMode(m) {
   authMode = m;
   const login = m === "login";
-  $("auth-title").textContent = login ? "Log in" : "Create your account";
-  $("auth-submit").textContent = login ? "Log in" : "Sign up";
-  $("auth-switch").textContent = login ? "No account yet? Sign up" : "Already have an account? Log in";
+  $("tab-login").classList.toggle("active", login);
+  $("tab-signup").classList.toggle("active", !login);
+  $("auth-title").textContent = login ? "Welcome back" : "Create your account";
+  $("auth-sub").textContent = login ? "Log in to see your applications." : "It takes less than a minute.";
+  $("auth-submit").textContent = login ? "Log in" : "Create account";
+  $("confirm-wrap").hidden = login;     // le champ de confirmation n'existe que pour l'inscription
+  $("confirm").required = !login;
   $("password").autocomplete = login ? "current-password" : "new-password";
   authMsg("");
 }
@@ -290,6 +389,10 @@ if (sb) {
   sb.auth.onAuthStateChange((event, session) => setTimeout(() => (session ? enter(session) : leave()), 0));
   $("auth-form").addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (authMode === "signup" && $("password").value !== $("confirm").value) {
+      authMsg("Passwords do not match.", true);
+      return;
+    }
     authMsg("Please wait...");
     const creds = { email: $("email").value.trim(), password: $("password").value };
     const { data, error } = authMode === "login" ? await sb.auth.signInWithPassword(creds) : await sb.auth.signUp(creds);
@@ -297,7 +400,20 @@ if (sb) {
     else if (!data.session) authMsg("Check your email to confirm your account, then log in.");
     else authMsg("");
   });
-  $("auth-switch").addEventListener("click", () => setAuthMode(authMode === "login" ? "signup" : "login"));
+  $("tab-login").addEventListener("click", () => setAuthMode("login"));
+  $("tab-signup").addEventListener("click", () => setAuthMode("signup"));
+  document.querySelectorAll(".pw-toggle").forEach((b) => b.addEventListener("click", () => {
+    const input = $(b.dataset.target);
+    input.type = input.type === "password" ? "text" : "password"; // afficher / cacher le mot de passe
+  }));
+  $("google-btn").addEventListener("click", async () => {
+    if (!cfg.GOOGLE_ENABLED) { authMsg("Google sign-in is not set up yet.", true); return; }
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: location.origin + location.pathname },
+    });
+    if (error) authMsg(error.message, true);
+  });
   $("logout-btn").addEventListener("click", () => sb.auth.signOut());
 } else {
   $("who").textContent = "Local mode (this browser only)";

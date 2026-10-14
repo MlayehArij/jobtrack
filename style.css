@@ -84,7 +84,7 @@ td a { color: var(--accent); font-weight: 600; text-decoration: none; }
 td a:hover { text-decoration: underline; }
 .status-select { width: auto; padding: .25rem .6rem; border-radius: 999px; font-weight: 600; font-size: .85rem; }
 .actions-cell { white-space: nowrap; }
-.icon { background: none; border: 0; cursor: pointer; font-size: 1.05rem; }
+.icon { background: none; border: 0; cursor: pointer; font-size: 1.05rem; color: var(--text); }
 
 /* ---------- Kanban ---------- */
 .board { display: grid; grid-template-columns: repeat(4, minmax(210px, 1fr)); gap: 1rem; overflow-x: auto; }
@@ -110,7 +110,9 @@ dialog::backdrop { background: rgba(5,5,20,.6); backdrop-filter: blur(4px); }
   .logo, #who { display: none; }
   .sidebar nav { display: flex; flex: 1; gap: .2rem; }
   .nav-btn { flex-direction: column; gap: .1rem; padding: .4rem; font-size: .72rem; align-items: center; justify-content: center; text-align: center; }
-  #theme-toggle { margin-top: 0; width: auto; }
+  #theme-toggle, #logout-btn { margin-top: 0; width: auto; flex: none; padding: .4rem .5rem; }
+  #theme-toggle span, #logout-btn span { display: none; }
+  .sidebar nav .nav-btn { flex: 1; min-width: 0; padding: .4rem .2rem; }
   .main { padding: 1rem 1rem 6rem; }
   .grid2, .form { grid-template-columns: 1fr; }
   .controls input[type=search] { width: 100%; }
@@ -125,3 +127,37 @@ dialog::backdrop { background: rgba(5,5,20,.6); backdrop-filter: blur(4px); }
 .auth-msg { margin: 0; min-height: 1.2em; color: var(--muted); font-size: .85rem; }
 .auth-msg.error { color: var(--rejected); }
 .link-btn { background: none; border: 0; color: var(--accent); font: inherit; cursor: pointer; }
+
+/* ---------- Connexion moderne ---------- */
+.tabs { display: grid; grid-template-columns: 1fr 1fr; gap: .3rem; padding: .3rem; border-radius: 14px; background: var(--field); border: 1px solid var(--line); }
+.tab { padding: .55rem; border: 0; border-radius: 10px; background: none; color: var(--muted); font: inherit; font-weight: 600; cursor: pointer; }
+.tab.active { background: linear-gradient(90deg, var(--accent), var(--accent2)); color: #fff; }
+.google-btn { display: flex; align-items: center; justify-content: center; gap: .7rem; padding: .7rem; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: #1f1f1f; font: inherit; font-weight: 600; cursor: pointer; }
+.google-btn .g { font-weight: 800; font-size: 1.15rem; color: transparent; -webkit-background-clip: text; background-clip: text;
+  background-image: conic-gradient(from -45deg, #ea4335 0 25%, #fbbc05 0 50%, #34a853 0 75%, #4285f4 0); }
+.divider { display: flex; align-items: center; gap: .8rem; color: var(--muted); font-size: .8rem; }
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.auth-form { display: grid; gap: 1rem; }
+.pw { position: relative; }
+.pw input { padding-right: 2.6rem; }
+.pw-toggle { position: absolute; right: .4rem; top: 50%; transform: translateY(-50%); background: none; border: 0; cursor: pointer; font-size: 1rem; padding: .3rem; }
+
+/* ---------- Assistant IA ---------- */
+dialog[open].ai-dialog { display: grid; gap: 1rem; width: min(640px, 94vw); max-height: 90vh; overflow-y: auto; }
+.ai-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.ai-head h2 { margin: 0; }
+.ai-dialog label { display: block; font-size: .82rem; color: var(--muted); margin-bottom: .25rem; }
+.ai-row { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+#ai-pane-msg { display: grid; gap: .8rem; }
+#ai-pane-msg .btn, #ai-copy { justify-self: start; }
+.ai-questions { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .8rem; }
+.qcard { display: grid; gap: .5rem; padding: .9rem; border: 1px solid var(--line); border-radius: 14px; background: var(--field); }
+.qcard .btn, .qcard .btn-ghost { justify-self: start; }
+.feedback { white-space: pre-wrap; padding: .8rem; border-radius: 12px; border: 1px solid var(--line); font-size: .9rem; }
+button:disabled { opacity: .6; cursor: wait; }
+
+/* ---------- Page AI Assistant ---------- */
+.ai-layout { display: grid; grid-template-columns: 320px 1fr; gap: 1rem; align-items: start; }
+.ai-side, .ai-main { display: grid; gap: 1rem; }
+.ai-layout label { display: block; font-size: .82rem; color: var(--muted); margin-bottom: .25rem; }
+@media (max-width: 800px) { .ai-layout { grid-template-columns: 1fr; } }

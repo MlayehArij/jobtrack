@@ -15,6 +15,10 @@ HTML5, CSS3 (variables, grid, backdrop-filter), JavaScript vanilla (DOM, LocalSt
 ## Lancer
 Ouvrir `index.html` dans un navigateur. Aucune installation.
 
+## Assistant IA
+- Page « AI Assistant » dans le menu : rédaction d'emails (candidature, relance, remerciement) et préparation d'entretien (questions + feedback sur tes réponses)
+- La clé de l'IA reste dans une fonction cloud Supabase ; fonctionne avec Google Gemini (gratuit) ou Claude (voir `SETUP_AI.md` et `edge-function-ai-assistant.ts`)
+
 ## Backend (Supabase)
 - Connexion / inscription par email, base de données cloud, une table `applications` protégée par RLS (chaque utilisateur ne voit que ses données)
 - Sans configuration (`config.js` vide), l'application fonctionne en mode local (LocalStorage)

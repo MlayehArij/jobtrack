@@ -8,15 +8,31 @@
 </head>
 <body>
 <section id="auth" class="auth" hidden>
-  <form id="auth-form" class="glass auth-card">
+  <div class="glass auth-card">
     <div class="logo">◆ JobTrack</div>
-    <h2 id="auth-title">Log in</h2>
-    <div><label for="email">Email</label><input type="email" id="email" required autocomplete="email"></div>
-    <div><label for="password">Password</label><input type="password" id="password" required minlength="6" autocomplete="current-password"></div>
-    <p id="auth-msg" class="auth-msg" role="alert"></p>
-    <button type="submit" id="auth-submit" class="btn">Log in</button>
-    <button type="button" id="auth-switch" class="link-btn">No account yet? Sign up</button>
-  </form>
+    <div class="tabs">
+      <button type="button" id="tab-login" class="tab active">Log in</button>
+      <button type="button" id="tab-signup" class="tab">Sign up</button>
+    </div>
+    <div>
+      <h2 id="auth-title">Welcome back</h2>
+      <p id="auth-sub" class="note">Log in to see your applications.</p>
+    </div>
+    <button type="button" id="google-btn" class="google-btn"><span class="g">G</span> Continue with Google</button>
+    <div class="divider"><span>or</span></div>
+    <form id="auth-form" class="auth-form">
+      <div><label for="email">Email</label>
+        <input type="email" id="email" required autocomplete="email" placeholder="you@example.com"></div>
+      <div><label for="password">Password</label>
+        <div class="pw"><input type="password" id="password" required minlength="6" autocomplete="current-password" placeholder="At least 6 characters">
+          <button type="button" class="pw-toggle" data-target="password" aria-label="Show or hide password">👁</button></div></div>
+      <div id="confirm-wrap" hidden><label for="confirm">Confirm password</label>
+        <div class="pw"><input type="password" id="confirm" minlength="6" autocomplete="new-password" placeholder="Repeat your password">
+          <button type="button" class="pw-toggle" data-target="confirm" aria-label="Show or hide password">👁</button></div></div>
+      <p id="auth-msg" class="auth-msg" role="alert"></p>
+      <button type="submit" id="auth-submit" class="btn">Log in</button>
+    </form>
+  </div>
 </section>
 
 <div class="app" id="app">
@@ -26,6 +42,7 @@
       <button class="nav-btn" data-view="dashboard">▦ <span>Dashboard</span></button>
       <button class="nav-btn" data-view="applications">☰ <span>Applications</span></button>
       <button class="nav-btn" data-view="kanban">▥ <span>Kanban</span></button>
+      <button class="nav-btn" data-view="ai">✨ <span>AI Assistant</span></button>
     </nav>
     <div id="who" class="note"></div>
     <button id="theme-toggle" class="nav-btn" aria-label="Changer de thème">☀️ <span>Theme</span></button>
@@ -82,6 +99,38 @@
     </section>
 
     <section id="view-kanban" hidden><div id="board" class="board"></div></section>
+
+    <section id="view-ai" hidden>
+      <div id="ai-layout" class="ai-layout">
+        <div class="glass ai-side">
+          <div><label for="ai-app">1. Choose an application</label><select id="ai-app"></select></div>
+          <p id="ai-offer-note" class="note"></p>
+          <div><label for="ai-lang">2. Language</label><select id="ai-lang"><option>English</option><option>French</option></select></div>
+          <div><label for="ai-about">3. About me (skills, projects), saved in this browser</label>
+            <textarea id="ai-about" rows="4" placeholder="React, JavaScript, SQL. Projects: JobTrack, StudyMate..."></textarea></div>
+        </div>
+        <div class="glass ai-main">
+          <div class="tabs">
+            <button type="button" id="ai-tab-msg" class="tab active">✉️ Write a message</button>
+            <button type="button" id="ai-tab-int" class="tab">🎤 Interview prep</button>
+          </div>
+          <div id="ai-pane-msg">
+            <div><label for="ai-kind">Message type</label>
+              <select id="ai-kind"><option value="apply">Application email</option><option value="followup">Follow-up email</option><option value="thanks">Thank-you after interview</option></select></div>
+            <button type="button" id="ai-gen-msg" class="btn">Generate message</button>
+            <textarea id="ai-msg-out" rows="10" hidden></textarea>
+            <button type="button" id="ai-copy" class="btn-ghost" hidden>Copy</button>
+          </div>
+          <div id="ai-pane-int" hidden>
+            <button type="button" id="ai-gen-int" class="btn">Generate questions</button>
+            <ol id="ai-questions" class="ai-questions"></ol>
+          </div>
+          <p id="ai-status" class="auth-msg" role="alert"></p>
+          <p class="note">AI can make mistakes. Please verify before sending.</p>
+        </div>
+      </div>
+      <p id="ai-empty" class="empty" hidden>Add an application first, then come back here.</p>
+    </section>
   </main>
 </div>
 
@@ -97,6 +146,8 @@
       <select id="status"><option>Applied</option><option>Interview</option><option>Accepted</option><option>Rejected</option></select>
     </div>
     <div class="wide"><label for="notes">📝 Notes (optional)</label><textarea id="notes" rows="2" placeholder="Recruiter name, interview questions..."></textarea></div>
+    <div class="wide"><label for="offer_text">📄 Job offer text (optional, used by the AI)</label>
+      <textarea id="offer_text" rows="3" placeholder="Paste the job offer here..."></textarea></div>
     <div class="form-actions">
       <button type="button" id="cancel-edit" class="btn-ghost">Cancel</button>
       <button type="submit" id="submit-btn" class="btn">Add application</button>
