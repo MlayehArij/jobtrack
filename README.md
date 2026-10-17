@@ -3,6 +3,8 @@
 Application web pour suivre ses candidatures de stage, PFE et emploi.
 
 ## Fonctionnalités
+- Page d'accueil pour les visiteurs : explique à quoi sert JobTrack et comment l'utiliser avant la connexion
+- Message de bienvenue et conseil du jour sur le dashboard
 - Dashboard moderne (thème sombre, effet verre) : statistiques, graphique des statuts, candidatures récentes
 - Ajouter, modifier, supprimer une candidature (entreprise, lien, ville, poste, date, statut, notes)
 - Vue tableau (tri par colonne) et vue Kanban en glisser-déposer
@@ -16,7 +18,7 @@ HTML5, CSS3 (variables, grid, backdrop-filter), JavaScript vanilla (DOM, LocalSt
 Ouvrir `index.html` dans un navigateur. Aucune installation.
 
 ## Assistant IA
-- Page « AI Assistant » dans le menu : rédaction d'emails (candidature, relance, remerciement) et préparation d'entretien (questions + feedback sur tes réponses)
+- Page « AI Assistant » dans le menu : rédaction d'emails (candidature, relance, remerciement), préparation d'entretien (questions + feedback sur tes réponses) et analyse de CV (score de correspondance avec une offre, points forts, compétences manquantes)
 - La clé de l'IA reste dans une fonction cloud Supabase ; fonctionne avec Google Gemini (gratuit) ou Claude (voir `SETUP_AI.md` et `edge-function-ai-assistant.ts`)
 
 ## Backend (Supabase)

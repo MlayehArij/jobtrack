@@ -161,3 +161,49 @@ button:disabled { opacity: .6; cursor: wait; }
 .ai-side, .ai-main { display: grid; gap: 1rem; }
 .ai-layout label { display: block; font-size: .82rem; color: var(--muted); margin-bottom: .25rem; }
 @media (max-width: 800px) { .ai-layout { grid-template-columns: 1fr; } }
+
+/* ---------- Page d'accueil (avant la connexion) ---------- */
+.landing { max-width: 1050px; margin: 0 auto; padding: 1.25rem 1.5rem 3rem; display: grid; gap: 3.5rem; align-content: start; }
+.land-nav { display: flex; justify-content: space-between; align-items: center; }
+.land-nav .logo, .auth-card .logo { display: block; padding: 0; } /* visible aussi sur mobile */
+.land-actions { display: flex; flex-wrap: wrap; gap: .6rem; }
+.hero { display: grid; grid-template-columns: 1.15fr 1fr; gap: 2.5rem; align-items: center; }
+.hero h1 { font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.1; letter-spacing: -.03em; margin: 0 0 1rem; }
+.grad { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lead { color: var(--muted); font-size: 1.1rem; margin: 0 0 1.5rem; }
+.preview { display: grid; gap: .9rem; }
+.preview .stats { margin: 0; grid-template-columns: repeat(3, 1fr); }
+.preview .stat { padding: .7rem; text-align: center; }
+.preview .stat b { font-size: 1.4rem; }
+.land-title { font-size: 1.3rem; margin: 0 0 1rem; }
+.features { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; }
+.feature .ico { font-size: 1.6rem; }
+.feature h3 { margin: .5rem 0 .3rem; font-size: 1rem; }
+.feature p { margin: 0; color: var(--muted); font-size: .9rem; }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+.step { display: flex; gap: .9rem; align-items: flex-start; }
+.step b { flex: none; width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center; color: #fff; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+.step p { margin: .1rem 0 0; }
+.land-foot { text-align: center; color: var(--muted); font-size: .85rem; }
+.land-foot a { color: var(--accent); }
+.back { justify-self: start; padding: 0; }
+@media (max-width: 800px) { .hero { grid-template-columns: 1fr; } .landing { padding: 1rem 1rem 3rem; } }
+
+/* ---------- Bienvenue + conseil du jour ---------- */
+.welcome { display: grid; grid-template-columns: 1fr 1.3fr; gap: 1rem 2rem; align-items: center; margin-bottom: 1rem; }
+.welcome h2 { margin: 0 0 .2rem; font-size: 1.25rem; }
+.tip { display: grid; gap: .4rem; padding: .8rem 1rem; border-radius: 14px; background: var(--field); border: 1px solid var(--line); font-size: .92rem; }
+.tip .link-btn { justify-self: start; padding: 0; font-size: .85rem; }
+@media (max-width: 800px) { .welcome { grid-template-columns: 1fr; } }
+
+/* ---------- Analyse de CV ---------- */
+.tabs3 { grid-template-columns: repeat(3, 1fr); }
+#ai-pane-cv { display: grid; gap: .8rem; }
+#ai-pane-cv .btn { justify-self: start; }
+#ai-pane-cv .note { margin: 0; }
+.cv-out { display: grid; gap: .8rem; padding: 1rem; border: 1px solid var(--line); border-radius: 14px; background: var(--field); }
+.cv-out ul { margin: .3rem 0 0; padding: 0; list-style: none; display: grid; gap: .2rem; font-size: .92rem; }
+.cv-out p { margin: 0; }
+.cv-score { font-size: 1.7rem; font-weight: 800; background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.score-bar { height: 10px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.score-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); }

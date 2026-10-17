@@ -7,8 +7,65 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<section id="landing" class="landing" hidden>
+  <nav class="land-nav">
+    <div class="logo">◆ JobTrack</div>
+    <div class="land-actions">
+      <button type="button" class="btn-ghost" data-auth="login">Log in</button>
+      <button type="button" class="btn" data-auth="signup">Sign up</button>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div>
+      <h1>Track every <span class="grad">internship and job application</span> in one place.</h1>
+      <p class="lead">JobTrack helps students stay organized, prepare for interviews and write better emails, with a built-in AI assistant.</p>
+      <div class="land-actions">
+        <button type="button" class="btn" data-auth="signup">Get started</button>
+        <button type="button" class="btn-ghost" data-auth="login">I already have an account</button>
+      </div>
+    </div>
+    <div class="glass preview" aria-hidden="true">
+      <div class="stats">
+        <div class="glass stat"><b>12</b><span>Applications</span></div>
+        <div class="glass stat"><b>3</b><span>Interviews</span></div>
+        <div class="glass stat"><b>1</b><span>Offers</span></div>
+      </div>
+      <ul class="recent">
+        <li><div><strong>Vermeg</strong><small class="note">PFE Developer</small></div><span class="badge s-Interview">Interview</span></li>
+        <li><div><strong>Telnet</strong><small class="note">Software Developer</small></div><span class="badge s-Applied">Applied</span></li>
+        <li><div><strong>Tunisie Tech</strong><small class="note">Intern</small></div><span class="badge s-Accepted">Accepted</span></li>
+      </ul>
+      <p class="note">Example data</p>
+    </div>
+  </header>
+
+  <section>
+    <h2 class="land-title">What you can do</h2>
+    <div class="features">
+      <div class="glass feature"><div class="ico">📋</div><h3>Track applications</h3><p>Save the company, position, city, date, notes and status of every application.</p></div>
+      <div class="glass feature"><div class="ico">▥</div><h3>Kanban board</h3><p>Drag a card between Applied, Interview, Accepted and Rejected to update its status.</p></div>
+      <div class="glass feature"><div class="ico">✨</div><h3>AI assistant</h3><p>Write application emails, follow-ups and thank-you messages, and practice interview questions.</p></div>
+      <div class="glass feature"><div class="ico">🔒</div><h3>Private and synced</h3><p>Each person has their own account. Your data is saved online and available on phone and computer.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="land-title">How it works</h2>
+    <div class="steps">
+      <div class="step"><b>1</b><div><strong>Create an account</strong><p class="note">Sign up with your email and a password.</p></div></div>
+      <div class="step"><b>2</b><div><strong>Add your applications</strong><p class="note">You can paste the job offer text to help the AI.</p></div></div>
+      <div class="step"><b>3</b><div><strong>Follow your progress</strong><p class="note">Use the dashboard, the Kanban board and the AI assistant.</p></div></div>
+    </div>
+  </section>
+
+  <footer class="land-foot">Student project built with HTML, CSS, JavaScript and Supabase ·
+    <a href="https://github.com/MlayehArij/jobtrack" target="_blank" rel="noopener noreferrer">View the code on GitHub</a></footer>
+</section>
+
 <section id="auth" class="auth" hidden>
   <div class="glass auth-card">
+    <button type="button" id="auth-back" class="link-btn back">← Back</button>
     <div class="logo">◆ JobTrack</div>
     <div class="tabs">
       <button type="button" id="tab-login" class="tab active">Log in</button>
@@ -19,7 +76,7 @@
       <p id="auth-sub" class="note">Log in to see your applications.</p>
     </div>
     <button type="button" id="google-btn" class="google-btn"><span class="g">G</span> Continue with Google</button>
-    <div class="divider"><span>or</span></div>
+    <div id="google-divider" class="divider"><span>or</span></div>
     <form id="auth-form" class="auth-form">
       <div><label for="email">Email</label>
         <input type="email" id="email" required autocomplete="email" placeholder="you@example.com"></div>
@@ -65,6 +122,10 @@
     </header>
 
     <section id="view-dashboard">
+      <div class="glass welcome">
+        <div><h2 id="welcome-title">Good morning 👋</h2><p id="welcome-sub" class="note"></p></div>
+        <div class="tip"><span id="tip-text"></span><button type="button" id="tip-next" class="link-btn">Another tip ↻</button></div>
+      </div>
       <div class="stats">
         <div class="glass stat"><b id="stat-total">0</b><span>Applications</span></div>
         <div class="glass stat"><b id="stat-interviews">0</b><span>Interviews</span></div>
@@ -110,9 +171,10 @@
             <textarea id="ai-about" rows="4" placeholder="React, JavaScript, SQL. Projects: JobTrack, StudyMate..."></textarea></div>
         </div>
         <div class="glass ai-main">
-          <div class="tabs">
-            <button type="button" id="ai-tab-msg" class="tab active">✉️ Write a message</button>
-            <button type="button" id="ai-tab-int" class="tab">🎤 Interview prep</button>
+          <div class="tabs tabs3">
+            <button type="button" id="ai-tab-msg" class="tab active">✉️ Message</button>
+            <button type="button" id="ai-tab-int" class="tab">🎤 Interview</button>
+            <button type="button" id="ai-tab-cv" class="tab">📄 CV match</button>
           </div>
           <div id="ai-pane-msg">
             <div><label for="ai-kind">Message type</label>
@@ -124,6 +186,13 @@
           <div id="ai-pane-int" hidden>
             <button type="button" id="ai-gen-int" class="btn">Generate questions</button>
             <ol id="ai-questions" class="ai-questions"></ol>
+          </div>
+          <div id="ai-pane-cv" hidden>
+            <div><label for="ai-cv">Your CV text, saved in this browser (remove phone number, address and email first)</label>
+              <textarea id="ai-cv" rows="8" placeholder="Paste the text of your CV here..."></textarea></div>
+            <button type="button" id="ai-gen-cv" class="btn">Analyze my CV</button>
+            <p class="note">Needs the job offer text in the application (✏️ Edit). The score is saved on the application.</p>
+            <div id="ai-cv-out" class="cv-out" hidden></div>
           </div>
           <p id="ai-status" class="auth-msg" role="alert"></p>
           <p class="note">AI can make mistakes. Please verify before sending.</p>

@@ -94,9 +94,29 @@ function getList() {
 }
 
 // ---------- Dashboard : cartes, graphique, récents ----------
+const TIPS = [
+  "Follow up 7 to 10 days after applying if you have not heard back.",
+  "Tailor your CV to each offer: put the most relevant project first.",
+  "Prepare a 30-second introduction about yourself and your projects.",
+  "Save the text of the job offer: postings are often removed later.",
+  "Practice interview questions out loud, not only in your head.",
+  "Keep your GitHub clean: a good README helps recruiters understand your project.",
+  "Send a short thank-you email after every interview.",
+  "Research the company before an interview: what they do and what they build.",
+  "Apply to a few places every week: small and regular beats one big burst.",
+  "Ask a friend or a teacher to proofread your emails before you send them.",
+];
+let tipIndex = Math.floor(Date.now() / 86400000); // un conseil différent chaque jour
 const count = (s) => apps.filter((a) => a.status === s).length;
 
 function renderDashboard() {
+  const hour = new Date().getHours();
+  $("welcome-title").textContent = `${hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"} 👋`;
+  const waiting = count("Applied");
+  $("welcome-sub").textContent = apps.length === 0
+    ? "Add your first application to get started."
+    : `${waiting} application${waiting === 1 ? " is" : "s are"} still waiting for a reply.`;
+  $("tip-text").textContent = `💡 ${TIPS[tipIndex % TIPS.length]}`;
   $("stat-total").textContent = apps.length;
   $("stat-interviews").textContent = count("Interview");
   $("stat-offers").textContent = count("Accepted");
@@ -152,6 +172,7 @@ function buildRow(a) {
 
   const tdP = el("td", "", a.position);
   if (a.notes) tdP.appendChild(el("div", "note", a.notes));
+  if (a.match_score != null) tdP.appendChild(el("div", "note", `🎯 CV match ${a.match_score}%`));
 
   const tdS = el("td"), sel = el("select", `status-select s-${a.status}`);
   STATUSES.forEach((s) => sel.add(new Option(s, s, false, s === a.status)));
@@ -231,6 +252,7 @@ document.querySelectorAll(".nav-btn[data-view]").forEach((b) =>
     render();
     window.scrollTo(0, 0);
   }));
+$("tip-next").addEventListener("click", () => { tipIndex++; renderDashboard(); });
 $("search").addEventListener("input", render);
 $("filter").addEventListener("change", render);
 
@@ -256,6 +278,7 @@ function aiClear() {
   $("ai-msg-out").hidden = true;
   $("ai-copy").hidden = true;
   $("ai-questions").replaceChildren();
+  $("ai-cv-out").hidden = true;
   aiStatus("");
 }
 function aiSelect() {
@@ -277,6 +300,8 @@ function aiTab(t) {
   $("ai-tab-int").classList.toggle("active", t === "int");
   $("ai-pane-msg").hidden = t !== "msg";
   $("ai-pane-int").hidden = t !== "int";
+  $("ai-tab-cv").classList.toggle("active", t === "cv");
+  $("ai-pane-cv").hidden = t !== "cv";
 }
 
 async function aiCall(payload) {
@@ -285,7 +310,7 @@ async function aiCall(payload) {
   const { data: { session } } = await sb.auth.getSession();
   const { data, error } = await sb.functions.invoke("ai-assistant", {
     body: { company: aiApp.company, position: aiApp.position, city: aiApp.city, notes: aiApp.notes,
-            offer: aiApp.offer_text, about: $("ai-about").value, language: $("ai-lang").value, ...payload },
+            offer: aiApp.offer_text, about: $("ai-about").value, cv: $("ai-cv").value, language: $("ai-lang").value, ...payload },
     headers: { Authorization: `Bearer ${session.access_token}` },
   });
   if (error) {
@@ -317,6 +342,33 @@ function buildQuestion(q) {
   li.append(practice, ta, send, fb);
   return li;
 }
+
+// Résultat de l'analyse de CV : score, barre, points forts, compétences manquantes, conseil
+function showCv(r) {
+  const out = $("ai-cv-out"), bar = el("div", "score-bar"), fill = el("i");
+  fill.style.width = `${r.score}%`;
+  bar.appendChild(fill);
+  const block = (title, items, icon) => {
+    const box = el("div"), ul = el("ul");
+    (items.length ? items : ["None"]).forEach((i) => ul.appendChild(el("li", "", `${icon} ${i}`))); // textContent : sûr
+    box.append(el("strong", "", title), ul);
+    return box;
+  };
+  out.replaceChildren(el("div", "cv-score", `${r.score}% match`), bar, block("Strengths", r.strengths, "✅"),
+    block("Missing", r.missing, "❌"), el("p", "", `💡 ${r.advice}`));
+  out.hidden = false;
+}
+
+$("ai-cv").value = localStorage.getItem("jobtrack.cv") || "";
+$("ai-cv").addEventListener("input", () => localStorage.setItem("jobtrack.cv", $("ai-cv").value));
+$("ai-tab-cv").addEventListener("click", () => aiTab("cv"));
+$("ai-gen-cv").addEventListener("click", (e) => aiRun(e.currentTarget, async () => {
+  if (!aiApp?.offer_text) throw new Error("Add the job offer text to this application first (✏️ Edit), then try again.");
+  if ($("ai-cv").value.trim().length < 50) throw new Error("Paste the text of your CV first.");
+  const { result } = await aiCall({ action: "cvmatch" });
+  showCv(result);
+  await dbUpdate(aiApp, { match_score: result.score }); // le score est gardé dans la candidature
+}));
 
 $("ai-app").addEventListener("change", () => { aiSelect(); aiClear(); });
 $("ai-tab-msg").addEventListener("click", () => aiTab("msg"));
@@ -371,6 +423,7 @@ function enter(session) {
   if (currentUserId === session.user.id) return; // évite de recharger à chaque renouvellement du jeton
   currentUserId = session.user.id;
   $("auth").hidden = true;
+  $("landing").hidden = true;
   $("app").hidden = false;
   $("who").textContent = session.user.email;
   $("logout-btn").hidden = false;
@@ -380,7 +433,18 @@ function leave() {
   currentUserId = null;
   apps = [];
   $("app").hidden = true;
+  showLanding();
+}
+// Un visiteur non connecté voit d'abord la page d'accueil, puis choisit "Log in" ou "Sign up"
+function showLanding() {
+  $("landing").hidden = false;
+  $("auth").hidden = true;
+  window.scrollTo(0, 0);
+}
+function showAuth(mode) {
+  $("landing").hidden = true;
   $("auth").hidden = false;
+  setAuthMode(mode);
 }
 
 if (sb) {
@@ -400,6 +464,9 @@ if (sb) {
     else if (!data.session) authMsg("Check your email to confirm your account, then log in.");
     else authMsg("");
   });
+  document.querySelectorAll("[data-auth]").forEach((b) => b.addEventListener("click", () => showAuth(b.dataset.auth)));
+  $("auth-back").addEventListener("click", showLanding);
+  $("google-btn").hidden = $("google-divider").hidden = !cfg.GOOGLE_ENABLED; // caché tant que Google n'est pas configuré
   $("tab-login").addEventListener("click", () => setAuthMode("login"));
   $("tab-signup").addEventListener("click", () => setAuthMode("signup"));
   document.querySelectorAll(".pw-toggle").forEach((b) => b.addEventListener("click", () => {
